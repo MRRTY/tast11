@@ -8,6 +8,7 @@ import services.enums.DataType;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Dispatcher {
     private static DatabaseManager databaseManager = DatabaseManager.getInstance();
@@ -167,6 +168,11 @@ public class Dispatcher {
         }
     }
 
+    public static void remove_copy_from_table(String databaseName, String tableName) {
+        Database database = DatabaseManager.getInstance().getDatabaseByName(databaseName);
+        Table table = database.getTableByName(tableName);
+        table.setRows(table.getRows().stream().distinct().collect(Collectors.toList()));
+    }
     public static void rename_column_name(String[] commandLine) {
         String oldName = commandLine[0];
         String newName = commandLine[1];
@@ -187,5 +193,9 @@ public class Dispatcher {
 
     public static void setCurrentTable(Table currentTable) {
         Dispatcher.currentTable = currentTable;
+    }
+
+    public static void rename_column_name(String databasename, String table, String oldValue, String newValue) {
+        DatabaseManager.getInstance().getDatabaseByName(databasename).getTableByName(table).getColumnByName(oldValue).setName(newValue);
     }
 }

@@ -2,7 +2,6 @@ package services;
 
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -11,11 +10,17 @@ import org.springframework.web.servlet.ModelAndView;
 import services.enums.DataType;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class MainController {
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public String home(){
+        return "redirect:/home";
+    }
+
 
     @RequestMapping(value = "/home", method = RequestMethod.GET)
     public ModelAndView index(){
@@ -34,12 +39,21 @@ public class MainController {
 
     }
 
+    @RequestMapping(value = "/home/{database}", method = RequestMethod.DELETE)
+    public String deleteDatabase(HttpServletRequest request, @PathVariable("database")String database){
+        DatabaseManager.getInstance().removeDatabase(database);
+        return "redirect:"+request.getRequestURI().replaceAll("/"+database,"");
+
+    }
+
 
     @RequestMapping(value = "/home/database", method = RequestMethod.POST)
     public String createDatabaseGet(@RequestParam("name") String name){
-        Dispatcher.create_database(new String[]{name});
+        DatabaseManager.getInstance().createDatabase(name);
         return "redirect:/home";
     }
+
+
     @RequestMapping(value = "/home/{databasename}/{table}", method = RequestMethod.GET)
     public ModelAndView viewTable(@PathVariable("databasename")String databasename,@PathVariable("table")String table){
         Database database = DatabaseManager.getInstance().getDatabaseByName(databasename);
@@ -76,5 +90,37 @@ public class MainController {
 
     }
 
+    @RequestMapping(value = "/home/{databasename}/{table}/delete_copy", method = RequestMethod.DELETE)
+    public String deleteCopy(HttpServletRequest request, @PathVariable("databasename")String databasename, @PathVariable("table")String table){
+        Dispatcher.remove_copy_from_table(databasename,table);
+        return "redirect:"+request.getRequestURI().replaceAll("/delete_copy","");
+
+    }
+
+    @RequestMapping(value = "/home/{databasename}/{table}", method = RequestMethod.DELETE)
+    public String deleteTable(HttpServletRequest request, @PathVariable("databasename")String databasename, @PathVariable("table")String table){
+        DatabaseManager.getInstance().getDatabaseByName(databasename).removeTable(table);
+        return "redirect:"+request.getRequestURI().replaceAll("/"+table,"");
+
+    }
+
+    @RequestMapping(value = "/home/{databasename}/{table}/rename_column", method = RequestMethod.PUT)
+    public String renameColumn(HttpServletRequest request, @PathVariable("databasename")String databasename, @PathVariable("table")String table,@RequestParam("oldValue") String oldValue, @RequestParam("newValue") String newValue){
+        Dispatcher.rename_column_name(databasename,table,oldValue,newValue);
+        return "redirect:"+request.getRequestURI().replaceAll("/rename_column","");
+
+    }
+
+    @RequestMapping(value = "/home/{databasename}/{table}/{rowIndex}", method = RequestMethod.PUT)
+    public String editRow(HttpServletRequest request, @PathVariable("databasename")String databasename, @PathVariable("table")String table, @PathVariable("rowIndex") Integer rowIndex){
+        Table t = DatabaseManager.getInstance().getDatabaseByName(databasename).getTableByName(table);
+        List<String> newValues = new ArrayList<>();
+        for(Column c : t.getColumns()){
+            newValues.add(request.getParameter(c.getName()));
+        }
+        t.editRow(rowIndex,newValues.toArray(new String[newValues.size()]));
+        return "redirect:"+request.getRequestURI().replaceAll("/"+rowIndex,"");
+
+    }
 
 }

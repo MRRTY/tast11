@@ -26,7 +26,11 @@
 </div>
 
 <c:forEach items="${database.tables}" var="table">
-    <a href="/home/${database.name}/${table.name}"> ${table.name}</a>
+    <a href="${requestPath}/${table.name}"> ${table.name}</a>
+    <form action="${requestPath}/${table.name}" method="post">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" value="Delete">
+    </form>
 </c:forEach>
 <br>
 </body>

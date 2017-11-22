@@ -27,6 +27,16 @@
         </c:forEach>
         <input type="submit" value="Add row">
     </form >
+    <form action="${requestPath}/delete_copy" method="post">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" value="delete_copy">
+    </form>
+    <form action="${requestPath}/rename_column" method="post">
+        <input type="text" name="oldValue" placeholder="Old value">
+        <input type="text" name="newValue" placeholder="New value">
+        <input type="hidden" name="_method" value="PUT">
+        <input type="submit" value="Rename Column">
+    </form>
 </div>
 <br>
 <table>
@@ -35,12 +45,20 @@
             <td><c:out value="${column.name}"></c:out></td>
         </c:forEach>
     </tr>
+    <c:set var="index" value="-1"></c:set>
     <c:forEach items="${table.rows}" var="row">
-        <tr>
-            <c:forEach items="${row.cells}" var="cell">
-                <td>${cell.value}</td>
-            </c:forEach>
-        </tr>
+        <form action="${requestPath}/${index = index+1}" method="post">
+            <tr>
+                <c:forEach items="${row.cells}" var="cell">
+                    <td><input type="text" name="${cell.column.name}" value="${cell.value}"></td>
+                </c:forEach>
+                <td>
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="submit" value="Edit">
+                </td>
+            </tr>
+
+        </form>
     </c:forEach>
 </table>
 </body>

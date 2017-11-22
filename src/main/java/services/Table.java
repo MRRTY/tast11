@@ -115,7 +115,13 @@ public class Table implements Serializable {
         return columns;
     }
 
+    public void setColumns(List<Column> columns) {
+        this.columns = columns;
+    }
 
+    public void setRows(List<Row> rows) {
+        this.rows = rows;
+    }
 
     public void editRow(int index, String[] objects) {
         List<String> vals = Arrays.asList(objects);
